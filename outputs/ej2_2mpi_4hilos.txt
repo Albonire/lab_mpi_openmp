@@ -1,0 +1,9 @@
+  Proceso MPI 0 | Hilo OpenMP 3 de 4
+  Proceso MPI 0 | Hilo OpenMP 2 de 4
+  Proceso MPI 0 | Hilo OpenMP 1 de 4
+  Proceso MPI 0 | Hilo OpenMP 0 de 4
+  Proceso MPI 1 | Hilo OpenMP 3 de 4
+  Proceso MPI 1 | Hilo OpenMP 2 de 4
+  Proceso MPI 1 | Hilo OpenMP 1 de 4
+  Proceso MPI 1 | Hilo OpenMP 0 de 4
+Total unidades: 2 x 4 = 8

@@ -1,0 +1,17 @@
+  Proceso MPI 3 | Hilo OpenMP 1 de 4
+  Proceso MPI 3 | Hilo OpenMP 3 de 4
+  Proceso MPI 3 | Hilo OpenMP 2 de 4
+  Proceso MPI 3 | Hilo OpenMP 0 de 4
+  Proceso MPI 0 | Hilo OpenMP 3 de 4
+  Proceso MPI 0 | Hilo OpenMP 1 de 4
+  Proceso MPI 0 | Hilo OpenMP 2 de 4
+  Proceso MPI 0 | Hilo OpenMP 0 de 4
+  Proceso MPI 1 | Hilo OpenMP 2 de 4
+  Proceso MPI 1 | Hilo OpenMP 1 de 4
+  Proceso MPI 1 | Hilo OpenMP 0 de 4
+  Proceso MPI 1 | Hilo OpenMP 3 de 4
+  Proceso MPI 2 | Hilo OpenMP 1 de 4
+  Proceso MPI 2 | Hilo OpenMP 3 de 4
+  Proceso MPI 2 | Hilo OpenMP 2 de 4
+  Proceso MPI 2 | Hilo OpenMP 0 de 4
+Total unidades: 4 x 4 = 16
