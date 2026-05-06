@@ -1,0 +1,7 @@
+Configuracion: 4 procesos MPI x 1 hilos OpenMP
+Suma paralela   = 31999996000000
+Suma secuencial = 31999996000000
+Esperado        = 31999996000000
+Tiempo paralelo:    0.047853 s
+Tiempo secuencial:  0.005583 s
+Speedup: 0.12x
