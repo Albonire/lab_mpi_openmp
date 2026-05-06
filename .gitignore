@@ -1,0 +1,12 @@
+# Binarios generados
+/mpi_01_hola
+/mpi_02_hibrido
+/mpi_03
+/mpi_04_speedup
+
+# Archivos objeto
+*.o
+
+# Temporales de editor
+*~
+*.swp

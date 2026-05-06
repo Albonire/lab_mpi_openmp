@@ -1,0 +1,3 @@
+Proceso 0 de 2: ¡Hola desde MPI!
+Proceso 1 de 2: ¡Hola desde MPI!
+[MAESTRO] Todos los 2 procesos han saludado.
