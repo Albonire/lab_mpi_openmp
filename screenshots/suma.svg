@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 580" width="100%">
+  <rect x="100" y="30" width="600" height="350" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" rx="8" ry="8" />
+  <text x="400" y="65" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#343a40">Nodo Físico</text>
+
+  <rect x="140" y="100" width="240" height="180" fill="#ddebf7" stroke="#2e75b6" stroke-width="2" rx="6" ry="6" />
+  <text x="260" y="130" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#1f4e79">Proceso MPI 0</text>
+  
+  <rect x="155" y="150" width="100" height="40" fill="#ffffff" stroke="#4472c4" stroke-width="1.5" rx="4" />
+  <text x="205" y="175" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">[Hilo 0]</text>
+  <rect x="265" y="150" width="100" height="40" fill="#ffffff" stroke="#4472c4" stroke-width="1.5" rx="4" />
+  <text x="315" y="175" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">[Hilo 1]</text>
+  <rect x="155" y="210" width="100" height="40" fill="#ffffff" stroke="#4472c4" stroke-width="1.5" rx="4" />
+  <text x="205" y="235" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">[Hilo 2]</text>
+  <rect x="265" y="210" width="100" height="40" fill="#ffffff" stroke="#4472c4" stroke-width="1.5" rx="4" />
+  <text x="315" y="235" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">[Hilo 3]</text>
+
+  <rect x="420" y="100" width="240" height="180" fill="#ddebf7" stroke="#2e75b6" stroke-width="2" rx="6" ry="6" />
+  <text x="540" y="130" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#1f4e79">Proceso MPI 1</text>
+  
+  <rect x="435" y="150" width="100" height="40" fill="#ffffff" stroke="#4472c4" stroke-width="1.5" rx="4" />
+  <text x="485" y="175" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">[Hilo 0]</text>
+  <rect x="545" y="150" width="100" height="40" fill="#ffffff" stroke="#4472c4" stroke-width="1.5" rx="4" />
+  <text x="595" y="175" text-anchor="middle" font-family="Arial" font-size="14" fill="#333">[Hilo 1]</text>
+
+  <path d="M 260 280 L 260 330 L 540 330 L 540 280" fill="none" stroke="#548235" stroke-width="3" />
+  <text x="400" y="325" text-anchor="middle" font-family="Arial" font-size="15" font-weight="bold" fill="#385723">Memoria Compartida</text>
+
+  <line x1="400" y1="380" x2="400" y2="480" stroke="#c00000" stroke-width="3" stroke-dasharray="6,4" />
+  <text x="400" y="434" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#c00000">Comunicación vía MPI (Red/Sockets)</text>
+
+  <rect x="100" y="480" width="600" height="70" fill="#f8f9fa" stroke="#6c757d" stroke-width="2" rx="8" ry="8" />
+  <text x="400" y="522" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#343a40">Otro Nodo</text>
+</svg>
