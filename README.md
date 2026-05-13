@@ -1,168 +1,232 @@
-# Lab MPI + OpenMP — Anderson Fabian Gonzalez
+# LAB-01-MPI-OPENMP-HYBRID | Anderson Fabian Gonzalez
 
-## Entorno de Trabajo
+> **Asignatura:** Fundamentos de Programación Concurrente y Distribuida  
+> **Docente:** Prf. Alejandro Jaimes  
+> **Fecha:** 13/05/2025  
+> **Repositorio:** [lab_mpi_openmp](https://github.com/Albonire/lab_mpi_openmp)
 
-- **Sistema Operativo:** Fedora Linux
-- **Compilador:** GCC (GNU Compiler Collection)
-- **Implementacion MPI:** OpenMPI
-- **Compilacion:** `mpicc` con flag `-fopenmp` para soporte hibrido
-- **Hardware:** Configuracion de hilos logicos disponible en el equipo de desarrollo
+---
+
+## Equipo
+
+|   | Colaborador              | GitHub                                          |
+|---|--------------------------|--------------------------------------------------|
+| 👤 | Anderson Fabian Gonzalez | [@Albonire](https://github.com/Albonire)        |
+
+**Repositorio:** [lab_mpi_openmp](https://github.com/Albonire/lab_mpi_openmp)  
+**Rama principal:** `main`
+
+## Configuración del repositorio
+
+### Clonar
+
+```bash
+git clone https://github.com/Albonire/lab_mpi_openmp.git
+cd lab_mpi_openmp
+```
+
+### Convención de commits
+
+```
+lab01: agrega ejercicio 1 hola mundo MPI
+lab01: completa ejercicio 3 suma híbrida
+lab01: agrega pantallazos ejercicio 2
+fix:   corrige suma en mpi_03
+```
+
+## Estructura de Repo
+
+```md
+lab_mpi_openmp/
+│
+├── README.md
+├── .gitignore
+├── mpi_01_hola.c
+├── mpi_02_hibrido.c
+├── mpi_03_suma_hibrida.c
+├── mpi_04_speedup.c
+│
+└── screenshots/
+    ├── ej1_2p.png
+    ├── ej1_4p.png
+    ├── ej2_2mpi_4hilos.png
+    ├── ej2_4mpi_4hilos.png
+    ├── ej3_resultado.png
+    ├── ej4_solo_mpi.png
+    ├── ej4_solo_omp.png
+    ├── ej4_2x2.png
+    ├── ej4_4x2.png
+    ├── modelo-híbrido.svg
+    └── suma.svg
+```
 
 ---
 
 ## Ejercicio 1 — Hola Mundo MPI
 
-**Descripcion breve:**  
-Programa basico que introduce la estructura de un programa MPI. Cada proceso obtiene su identificador (`rank`) y el numero total de procesos (`size`), imprimiendo un saludo individual. El proceso con `rank == 0` actua como maestro e imprime un mensaje final de sincronizacion logica.
+**Descripción:** Cada proceso MPI imprime su rank y el total de procesos. El proceso maestro (rank 0) imprime un mensaje adicional al final.
 
-**Compilacion y ejecucion:**
+**Compilación y ejecución:**
+
 ```bash
-mpicc -O2 mpi_01_hola.c -o mpi_01_hola
+mpicc mpi_01_hola.c -o mpi_01_hola
 mpiexec -n 4 ./mpi_01_hola
 mpiexec -n 2 ./mpi_01_hola
 ```
 
-**Pantallazos:**
+**Pantallazo — 4 procesos:**
 
-Ejecucion con 4 procesos:  
-![Ejercicio 1 - 4 procesos](screenshots/ej1_4p.png)
+![Ejercicio 1 con 4 procesos](screenshots/ej1_4p.png)
 
-Ejecucion con 2 procesos:  
-![Ejercicio 1 - 2 procesos](screenshots/ej1_2p.png)
+**Pantallazo — 2 procesos:**
 
-**Respuestas a preguntas de analisis:**
+![Ejercicio 1 con 2 procesos](screenshots/ej1_2p.png)
 
-1. **Por que el orden de salida varia entre ejecuciones?**  
-   Los procesos MPI se ejecutan de forma concurrente y asincrona. El planificador del sistema operativo es quien determina en que momento exacto cada proceso obtiene tiempo de CPU para imprimir. No existe una garantia de orden secuencial en las llamadas a `printf` provenientes de diferentes procesos.
+**Respuestas a las preguntas de análisis:**
 
-2. **Que pasaria si ejecutas con -n 1? Tiene sentido paralelizar asi?**  
-   Con `-n 1` solo existira el proceso `rank 0`. El programa funcionara correctamente pero no habra paralelismo real, ya que la ejecucion sera estrictamente secuencial. Paralelizar con un solo proceso carece de sentido practico mas alla de la depuracion.
+1. **¿Por qué el orden de salida varía entre ejecuciones?**  
+   Los procesos MPI se ejecutan de forma concurrente y asíncrona. El planificador del sistema operativo determina en qué momento cada proceso obtiene tiempo de CPU para imprimir. No existe garantía de orden secuencial en las llamadas a `printf` provenientes de diferentes procesos.
 
-3. **Para que sirve MPI_COMM_WORLD? Podria haber otros comunicadores?**  
-   `MPI_COMM_WORLD` es el comunicador por defecto que agrupa a todos los procesos lanzados en la ejecucion. Si, es posible crear otros comunicadores mediante funciones como `MPI_Comm_split` para definir subgrupos de procesos que puedan comunicarse entre si de forma aislada del resto.
+2. **¿Qué pasaría si ejecutas con `-n 1`?**  
+   Con `-n 1` solo existirá el proceso `rank 0`. El programa funcionará correctamente pero no habrá paralelismo real, ya que la ejecución será estrictamente secuencial. Paralelizar con un solo proceso carece de sentido práctico más allá de la depuración.
+
+3. **¿Para qué sirve `MPI_COMM_WORLD`?**  
+   `MPI_COMM_WORLD` es el comunicador por defecto que agrupa a todos los procesos lanzados en la ejecución. Es posible crear otros comunicadores mediante funciones como `MPI_Comm_split` para definir subgrupos de procesos que se comuniquen entre sí de forma aislada.
 
 ---
 
 ## Ejercicio 2 — OpenMP dentro de MPI
 
-**Descripcion breve:**  
-Introduccion al modelo de programacion hibrida. Se lanzan multiples procesos MPI, y dentro de cada uno se crea una region paralela de OpenMP que genera 4 hilos. Esto demuestra como combinar distribucion de memoria (MPI) con memoria compartida (OpenMP).
+**Descripción:** Dentro de cada proceso MPI se lanza una región paralela OpenMP con 4 hilos. Cada hilo imprime su ID junto con el rank del proceso que lo contiene. Al final, el maestro calcula el total de unidades de cómputo activas.
 
-**Estructura del modelo hibrido:**
+**Estructura del modelo híbrido:**
 
-![Estructura del modelo híbrido](./screenshots/modelo-híbrido.svg)
+![Estructura del modelo híbrido](screenshots/modelo-híbrido.svg)
 
-**Compilacion y ejecucion:**
+**Compilación y ejecución:**
+
 ```bash
-mpicc -O2 -fopenmp mpi_02_hibrido.c -o mpi_02_hibrido
+mpicc -fopenmp mpi_02_hibrido.c -o mpi_02_hibrido
 mpiexec -n 2 ./mpi_02_hibrido
 mpiexec -n 4 ./mpi_02_hibrido
 ```
 
-**Pantallazos:**
+**Pantallazo — 2 procesos MPI × 4 hilos:**
 
-Ejecucion con 2 procesos MPI y 4 hilos OMP:  
-![Ejercicio 2 - 2 procesos MPI](screenshots/ej2_2mpi_4hilos.png)
+![Ejercicio 2 con 2 procesos](screenshots/ej2_2mpi_4hilos.png)
 
-Ejecucion con 4 procesos MPI y 4 hilos OMP:  
-![Ejercicio 2 - 4 procesos MPI](screenshots/ej2_4mpi_4hilos.png)
+**Pantallazo — 4 procesos MPI × 4 hilos:**
 
-**Respuestas a preguntas de analisis:**
+![Ejercicio 2 con 4 procesos](screenshots/ej2_4mpi_4hilos.png)
 
-1. **Con 2 procesos MPI y 4 hilos OMP, cuantas unidades de computo hay en total?**  
-   Hay 8 unidades logicas de computo. Se calculan multiplicando la cantidad de procesos por la cantidad de hilos internos: 2 x 4 = 8.
+**Respuestas a las preguntas de análisis:**
 
-2. **En que se diferencia ejecutar con -n 4 (4 MPI, 4 hilos) vs -n 1 (1 MPI, 16 hilos)?**  
-   En la configuracion de 4 procesos MPI, la memoria esta distribuida en 4 espacios de direcciones separados; si necesitan compartir datos, deben usar comunicacion MPI (paso de mensajes). En la configuracion de 1 proceso y 16 hilos, toda la ejecucion ocurre en un solo espacio de memoria compartida, por lo que los hilos pueden leer y escribir las mismas variables directamente sin overhead de red, limitado por la capacidad de un solo nodo.
+1. **Con 2 procesos MPI y 4 hilos OMP, ¿cuántas unidades de cómputo hay?**  
+   Hay 8 unidades lógicas de cómputo: 2 × 4 = 8.
 
-3. **Por que es importante MPI_Init_thread en lugar de MPI_Init cuando usamos OpenMP?**  
-   Porque MPI necesita conocer el nivel de soporte de hilos que la aplicacion requerira. `MPI_Init_thread` permite solicitar un nivel especifico (en este caso `MPI_THREAD_FUNNELED`, que indica que solo el hilo principal realizara llamadas a la libreria MPI). Usar `MPI_Init` puede llevar a comportamientos indefinidos o errores en tiempo de ejecucion si multiples hilos intentan comunicarse via MPI simultaneamente.
+2. **¿Diferencia entre `-n 4` (4 MPI, 4 hilos) vs `-n 1` (1 MPI, 16 hilos)?**  
+   Con 4 procesos MPI, la memoria está distribuida en 4 espacios de direcciones separados; si necesitan compartir datos, deben usar paso de mensajes. Con 1 proceso y 16 hilos, toda la ejecución ocurre en un solo espacio de memoria compartida, evitando el overhead de comunicación por red, pero limitado a un solo nodo.
+
+3. **¿Por qué `MPI_Init_thread` en lugar de `MPI_Init`?**  
+   Porque MPI necesita conocer el nivel de soporte de hilos requerido. `MPI_Init_thread` permite solicitar `MPI_THREAD_FUNNELED`, indicando que solo el hilo principal realizará llamadas MPI. Usar `MPI_Init` puede llevar a comportamientos indefinidos si múltiples hilos intentan comunicarse vía MPI simultáneamente.
 
 ---
 
-## Ejercicio 3 — Suma Hibrida
+## Ejercicio 3 — Suma Híbrida de Vector
 
-**Descripcion breve:**  
-El proceso raiz (`rank 0`) inicializa un vector grande de un millon de elementos. Se utiliza `MPI_Scatter` para distribuir porciones equitativas del vector a todos los procesos. Cada proceso suma su porcion local utilizando la paralelizacion de OpenMP con la clausula `reduction`. Finalmente, `MPI_Reduce` reune las sumas parciales en el proceso raiz para obtener la suma total.
+**Descripción:** El proceso maestro inicializa un vector de 1,000,000 de elementos. Se utiliza `MPI_Scatter` para distribuir porciones equitativas a todos los procesos. Cada proceso suma su porción local con OpenMP usando `reduction`. Finalmente, `MPI_Reduce` reúne las sumas parciales en el proceso raíz.
 
-**Flujo de datos del ejercicio:**
+**Flujo de datos:**
 
-![Suma híbrida](./screenshots/suma.svg)
+![Suma híbrida](screenshots/suma.svg)
 
-**Compilacion y ejecucion:**
+**Compilación y ejecución:**
+
 ```bash
-mpicc -O2 -fopenmp mpi_03_suma_hibrida.c -o mpi_03
+mpicc -fopenmp mpi_03_suma_hibrida.c -o mpi_03
 mpiexec -n 4 ./mpi_03
 ```
 
-**Pantallazo:**
+**Pantallazo — resultado:**
 
-Resultado de la suma hibrida:  
-![Ejercicio 3 - Resultado](screenshots/ej3_resultado.png)
+![Ejercicio 3 resultado](screenshots/ej3_resultado.png)
 
-**Respuestas a preguntas de analisis:**
+**Verificación:**
 
-1. **Que hace exactamente MPI_Scatter? Quien envia y quien recibe?**  
-   `MPI_Scatter` toma un arreglo que reside en la memoria del proceso raiz (definido en los parametros, usualmente `rank 0`), lo divide en fragmentos iguales y envia un fragmento distinto a cada proceso del comunicador, incluyendose a si mismo. El proceso raiz es el emisor original, y todos los procesos (incluido el raiz) son receptores de su propio bloque.
+```
+Suma total = 499999500000
+Esperado   = 499999500000  ✓
+```
 
-2. **Por que usamos reduction(+:suma_local) y no una variable compartida directamente?**  
-   Para evitar condiciones de carrera (race conditions). Si multiples hilos intentan escribir y leer la misma variable `suma_local` al mismo tiempo de forma descoordinada, se produciran perdidas de datos y el resultado sera incorrecto. La clausula `reduction` crea copias privadas de la variable para cada hilo y se encarga de combinarlas de forma segura al final de la region paralela.
+**Respuestas a las preguntas de análisis:**
 
-3. **Que pasaria si olvidaras MPI_Reduce y solo imprimieras suma_local en rank==0?**  
-   Solo se imprimiria la suma del bloque local que le correspondio al proceso 0 (los primeros 250,000 elementos). Las sumas parciales calculadas por los procesos 1, 2 y 3 se perderian al finalizar sus ejecuciones, dando un resultado drasticamente menor al esperado.
+1. **¿Qué hace exactamente `MPI_Scatter`?**  
+   Toma un arreglo en el proceso raíz, lo divide en fragmentos iguales y envía un fragmento distinto a cada proceso del comunicador (incluyéndose a sí mismo). El proceso raíz es el emisor y todos los procesos son receptores de su propio bloque.
+
+2. **¿Por qué `reduction(+:suma_local)` y no una variable compartida?**  
+   Para evitar condiciones de carrera. Si múltiples hilos escriben y leen la misma variable simultáneamente, se producen pérdidas de datos. La cláusula `reduction` crea copias privadas para cada hilo y las combina de forma segura al final de la región paralela.
+
+3. **¿Qué pasaría si olvidaras `MPI_Reduce` e imprimieras `suma_local` en rank 0?**  
+   Solo se imprimiría la suma del bloque local del proceso 0 (los primeros 250,000 elementos). Las sumas parciales de los demás procesos se perderían, dando un resultado drásticamente menor al esperado.
 
 ---
 
-## Ejercicio 4 (Reto) — Speedup
+## Ejercicio 4 (Reto) — Speedup Híbrido
 
-**Descripcion breve:**  
-A partir del codigo del ejercicio 3, se agrego medicion de tiempos usando `MPI_Wtime()` y una version puramente secuencial del calculo. El objetivo es comparar el tiempo de ejecucion secuencial frente a diferentes configuraciones de paralelismo (Solo MPI, Solo OpenMP, e Hibrido) para calcular el speedup y analizar la escalabilidad.
+**Descripción:** Se añade medición de tiempos con `MPI_Wtime()` al Ejercicio 3 para comparar el rendimiento secuencial frente a diferentes configuraciones de paralelismo y calcular el speedup.
 
-**Compilacion y ejecucion:**
+**Compilación:**
+
 ```bash
-mpicc -O2 -fopenmp -DN=8000000 mpi_04_speedup.c -o mpi_04_speedup
+mpicc -fopenmp -DN=8000000 mpi_04_speedup.c -o mpi_04_speedup
+```
+
+**Ejecuciones:**
+
+```bash
+OMP_NUM_THREADS=1 mpiexec -n 4 ./mpi_04_speedup   # Solo MPI
+OMP_NUM_THREADS=4 mpiexec -n 1 ./mpi_04_speedup   # Solo OMP
+OMP_NUM_THREADS=2 mpiexec -n 2 ./mpi_04_speedup   # Híbrido 2x2
+OMP_NUM_THREADS=2 mpiexec -n 4 ./mpi_04_speedup   # Híbrido 4x2
 ```
 
 **Tabla de resultados:**
 
-| Configuracion | Procesos MPI | Hilos OMP | Speedup Obtenido |
-|---------------|:------------:|:---------:|:----------------:|
-| Solo MPI      | 4            | 1         | [Completar] x    |
-| Solo OMP      | 1            | 4         | [Completar] x    |
-| MPI + OMP     | 2            | 2         | [Completar] x    |
-| MPI + OMP     | 4            | 2         | [Completar] x    |
-
-*(Nota: Reemplazar "[Completar]" con los valores obtenidos en tus ejecuciones)*
+| Configuración | Procesos MPI | Hilos OMP | Tiempo paralelo (s) | Tiempo secuencial (s) | Speedup |
+|---------------|:------------:|:---------:|:-------------------:|:---------------------:|:-------:|
+| Solo MPI      | 4            | 1         | 0.047853            | 0.005583              | 0.12×   |
+| Solo OMP      | 1            | 4         | 0.045457            | 0.006333              | 0.14×   |
+| MPI + OMP     | 2            | 2         | 0.049716            | 0.006862              | 0.14×   |
+| MPI + OMP     | 4            | 2         | 0.090506            | 0.009596              | 0.11×   |
 
 **Pantallazos:**
 
-Configuracion Solo MPI:  
-![Ejercicio 4 - Solo MPI](screenshots/ej4_solo_mpi.png)
+![Speedup solo MPI](screenshots/ej4_solo_mpi.png)
+![Speedup solo OMP](screenshots/ej4_solo_omp.png)
+![Speedup híbrido 2x2](screenshots/ej4_2x2.png)
+![Speedup híbrido 4x2](screenshots/ej4_4x2.png)
 
-Configuracion Solo OMP:  
-![Ejercicio 4 - Solo OMP](screenshots/ej4_solo_omp.png)
+**Respuestas a las preguntas de análisis:**
 
-Configuracion Hibrida 2x2:  
-![Ejercicio 4 - MPI+OMP 2x2](screenshots/ej4_2x2.png)
+1. **¿Coincide con la Ley de Amdahl?**  
+   En este caso los speedups obtenidos son menores a 1 (slowdown), lo cual indica que el overhead de inicialización de procesos/hilos y comunicación supera el beneficio del paralelismo para este tamaño de problema. La Ley de Amdahl predice el máximo teórico asumiendo overhead cero; en la práctica, con N=8,000,000 y operaciones simples de suma, el costo de `MPI_Scatter`/`MPI_Reduce` y la creación de hilos domina sobre el cómputo real.
 
-Configuracion Hibrida 4x2:  
-![Ejercicio 4 - MPI+OMP 4x2](screenshots/ej4_4x2.png)
+2. **¿Por qué más procesos/hilos no siempre dan mayor speedup?**  
+   El hardware tiene un número finito de núcleos físicos; lanzar más hilos o procesos causa oversubscription y cambios de contexto costosos. Además, a medida que aumenta el paralelismo, el overhead de comunicación (MPI) y sincronización crece hasta superar el beneficio del cómputo paralelo, como se evidencia en estos resultados.
 
-**Analisis:**
-
-1. **Coincide el speedup con lo que predice la Ley de Amdahl? (parte paralela approx 100%)**  
-   Teoricamente, al ser un problema sumamente paralelizable, el speedup deberia acercarse al numero de unidades de computo. Sin embargo, en la practica el speedup es menor al ideal. La Ley de Amdahl predice el maximo teorico, pero no contempla los tiempos muertos por sincronizacion, el inicio de procesos, ni las latencias de red, por lo que rara vez se alcanza una escalabilidad lineal perfecta.
-
-2. **Por que mas procesos/hilos no siempre significan mayor speedup?**  
-   Existen varios factores limitantes. Primero, el hardware tiene un numero fisico de núcleos; lanzar mas hilos o procesos de los disponibles causa "oversubscription", generando cambios de contexto costosos. Segundo, a medida que se aumenta el paralelismo, el overhead de comunicacion (en MPI) y de sincronizacion de hilos crece, hasta el punto donde cuesta mas coordinarse que hacer el calculo en si.
-
-3. **Que overhead introduce MPI que no existe en OpenMP puro?**  
-   MPI introduce el costo de la comunicacion entre procesos (paso de mensajes por la pila de red o sockets locales), la copia de datos entre espacios de memoria separados, y la sincronizacion global implicita en operaciones colectivas como `Scatter` y `Reduce`. OpenMP puro opera dentro de un mismo espacio de memoria compartida, evitando las copias de datos y el costo de transmision por red.
+3. **¿Qué overhead introduce MPI que no existe en OpenMP puro?**  
+   MPI introduce el costo de comunicación entre procesos (paso de mensajes por sockets locales o red), la copia de datos entre espacios de memoria separados, y la sincronización global implícita en operaciones colectivas como `Scatter` y `Reduce`. OpenMP opera dentro de un mismo espacio de memoria compartida, evitando copias y transmisión.
 
 ---
 
 ## Conclusiones
 
-- La programacion hibrida MPI + OpenMP permite aprovechar las ventajas de ambos paradigmas: la distribucion a traves de multiples nodos con MPI y la explotacion de núcleos locales con memoria compartida mediante OpenMP.
-- La sincronizacion y el manejo correcto de las variables (usando `reduction` en OpenMP y comunicadores en MPI) son estrictamente necesarios para evitar resultados erroneos causados por condiciones de carrera.
-- La medicion de rendimiento demuestra que el paralelismo no es una solucion magica; el overhead de comunicacion y las limitaciones del hardware imponen un limite a la ganancia de velocidad (speedup), haciendo fundamental el analisis empirico para determinar la configuracion optima de procesos e hilos.
+1. La programación híbrida MPI + OpenMP permite combinar distribución entre nodos (MPI) con explotación de núcleos locales mediante memoria compartida (OpenMP), ofreciendo flexibilidad para diferentes arquitecturas de hardware.
+
+2. El overhead de comunicación y sincronización no es despreciable: para problemas con operaciones simples (como sumas) y tamaños moderados, el costo de `MPI_Scatter`/`MPI_Reduce` y la creación de hilos puede superar el beneficio del paralelismo, resultando en slowdown en lugar de speedup.
+
+3. La correcta sincronización de variables (usando `reduction` en OpenMP y operaciones colectivas en MPI) es estrictamente necesaria para evitar condiciones de carrera y resultados erróneos.
+
+4. El análisis empírico del rendimiento es fundamental: la Ley de Amdahl proporciona un límite teórico, pero factores como la latencia de comunicación, el tamaño del problema y la granularidad del cómputo determinan si el paralelismo es realmente beneficioso en la práctica.
+
+5. Para obtener speedup real en un esquema híbrido, se requiere un volumen de cómputo por proceso/hilo suficientemente grande que justifique el overhead de coordinación, lo cual implica escalar el tamaño del problema (N) o aumentar la complejidad computacional por elemento.
